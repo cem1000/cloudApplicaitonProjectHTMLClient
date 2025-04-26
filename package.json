@@ -1,0 +1,11 @@
+{
+  "name": "product-management-html",
+  "version": "1.0.0",
+  "description": "Simple HTML client for product management",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC"
+} 

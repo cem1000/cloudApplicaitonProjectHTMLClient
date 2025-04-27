@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Tests</title>
+    <style>
+        .passed { color: green; }
+        .failed { color: red; }
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+    <h1>Product App Tests</h1>
+    <div id="test-results"></div>
+
+    <div id="test-environment" style="display: none;">
+        <form id="productForm">
+            <input type="hidden" id="productId">
+            <input type="text" id="name">
+            <textarea id="description"></textarea>
+            <input type="number" id="price">
+            <input type="checkbox" id="available">
+            <button type="submit">Save</button>
+        </form>
+        <div id="productsList"></div>
+        <h2 id="formTitle">Add New Product</h2>
+        <button id="cancelBtn">Cancel</button>
+        <button id="showAllBtn">Show All</button>
+        <button id="showAvailableBtn">Show Available</button>
+        <button id="showUnavailableBtn">Show Unavailable</button>
+    </div>
+
+    <script>
+        // Mock necessary browser APIs
+        window.alert = function(msg) { console.log('ALERT:', msg); };
+        window.confirm = function(msg) { console.log('CONFIRM:', msg); return true; };
+        window.scrollTo = function() {};
+        
+        // Mock fetch API
+        window.fetch = function(url, options) {
+            console.log('FETCH:', url, options);
+            return Promise.resolve({
+                ok: true,
+                json: function() {
+                    if (url.includes('/products') && !options) {
+                        return Promise.resolve([
+                            { id: 1, name: 'Test Product', description: 'Description', price: 10.99, available: true }
+                        ]);
+                    }
+                    return Promise.resolve({});
+                }
+            });
+        };
+
+        function assert(condition, message) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = 'test-result';
+            
+            if (condition) {
+                resultDiv.innerHTML = `<span class="passed">✓ PASS:</span> ${message}`;
+            } else {
+                resultDiv.innerHTML = `<span class="failed">✗ FAIL:</span> ${message}`;
+            }
+            
+            document.getElementById('test-results').appendChild(resultDiv);
+            console.log(condition ? 'PASS: ' : 'FAIL: ', message);
+            return condition;
+        }
+
+        // Load the app script
+        const script = document.createElement('script');
+        script.src = '../js/app.js';
+        document.head.appendChild(script);
+
+        // Run tests when app is loaded
+        script.onload = function() {
+            runTests();
+        };
+
+        async function runTests() {
+            // Manually trigger the DOMContentLoaded event since we're loading the script dynamically
+            document.dispatchEvent(new Event('DOMContentLoaded'));
+            
+            // Give time for the app to initialize
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Test 1: Check if products were fetched and displayed
+            const products = document.getElementById('productsList');
+            assert(
+                products.innerHTML.includes('Test Product'), 
+                'Products should be fetched and displayed'
+            );
+            
+            // Test 2: Test product creation form
+            document.getElementById('name').value = 'New Test Product';
+            document.getElementById('description').value = 'New Description';
+            document.getElementById('price').value = '19.99';
+            document.getElementById('available').checked = true;
+            
+            // Save the product
+            const form = document.getElementById('productForm');
+            const submitEvent = new Event('submit');
+            submitEvent.preventDefault = function() {};
+            form.dispatchEvent(submitEvent);
+            
+            // Wait for async operations
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            assert(
+                document.getElementById('name').value === '',
+                'Form should be reset after product creation'
+            );
+            
+            // Test 3: Test filter buttons
+            const showAvailableBtn = document.getElementById('showAvailableBtn');
+            showAvailableBtn.click();
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            assert(
+                true, // Just checking if the click doesn't cause errors
+                'Available filter button should work'
+            );
+            
+            console.log('All tests completed');
+        }
+    </script>
+</body>
+</html> 

@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const API_URL = 'http://localhost:3001/api';
+    const API_URL = "http://54.84.82.77:3001/api";
     
     const productForm = document.getElementById('productForm');
     const productsList = document.getElementById('productsList');
